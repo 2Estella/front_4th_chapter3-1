@@ -57,7 +57,16 @@ export default [
       // 구성된 규칙이 포함된 객체, files가 지정되면 포함된 파일만 검사
       // Prettier 통합 규칙
       'prettier/prettier': 'error', // Prettier 포맷팅 오류를 ESLint 에러로 표시
-
+      'comma-dangle': [
+        'error',
+        {
+          arrays: 'always-multiline',
+          objects: 'always-multiline',
+          imports: 'always-multiline',
+          exports: 'always-multiline',
+          functions: 'never',
+        },
+      ],
       // React 관련 규칙
       'react/prop-types': 'off', // TypeScript 사용 시 prop-types 검사를 비활성화
       'react/react-in-jsx-scope': 'off', // React 17+에서는 필요 없음
@@ -100,6 +109,9 @@ export default [
           'newlines-between': 'always',
         },
       ],
+
+      // import 확장자 규칙만 비활성화
+      'import/extensions': 'off',
     },
   },
   // 테스트 파일 설정

@@ -9,6 +9,7 @@
     "baseUrl": "./",
     // 경로 별칭 설정
     "paths": {
+			"@/*": ["src/*"],
       "@components/*": ["src/components/*"]
     },
     "outDir": "./build",
