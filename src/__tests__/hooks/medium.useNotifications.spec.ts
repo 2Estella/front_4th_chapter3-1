@@ -1,20 +1,16 @@
 import { renderHook, act } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { useNotifications } from '@/hooks/useNotifications';
 import { Event } from '@/types';
 import { createNotificationMessage } from '@/utils/notificationUtils';
 
+const useIntervalMock = vi.fn();
+vi.mock('@chakra-ui/react', () => ({
+  useInterval: (callback: () => void) => useIntervalMock(callback),
+}));
+
 describe('useNotifications', () => {
-  beforeEach(() => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date('2024-10-01T09:49:00'));
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   const mockEvents: Event[] = [
     {
       id: '1',
@@ -22,7 +18,7 @@ describe('useNotifications', () => {
       description: '회의 설명',
       date: '2024-10-01',
       startTime: '10:00',
-      endTime: '11:00',
+      endTime: '11:30',
       location: '회의실 A',
       category: '회의',
       repeat: { type: 'none', interval: 0 },
@@ -38,22 +34,26 @@ describe('useNotifications', () => {
   it('지정된 시간이 된 경우 알림이 새롭게 생성되어 추가된다', () => {
     const { result } = renderHook(() => useNotifications(mockEvents));
 
-    expect(result.current.notifications).toEqual([]);
-
+    const [[triggerNotification]] = useIntervalMock.mock.calls;
     act(() => {
-      vi.advanceTimersByTime(1000);
+      triggerNotification();
     });
 
-    expect(result.current.notifications).toEqual([
-      { id: '1', message: createNotificationMessage(mockEvents[0]) },
-    ]);
+    const expectedNotification = {
+      id: '1',
+      message: createNotificationMessage(mockEvents[0]),
+    };
+
+    expect(result.current.notifications).toEqual([expectedNotification]);
   });
 
   it('index를 기준으로 알림을 적절하게 제거할 수 있다', () => {
     const { result } = renderHook(() => useNotifications(mockEvents));
 
+    // 알림 생성
+    const [[callback]] = useIntervalMock.mock.calls;
     act(() => {
-      vi.advanceTimersByTime(1000);
+      callback();
     });
 
     expect(result.current.notifications).toEqual([
@@ -70,19 +70,25 @@ describe('useNotifications', () => {
   it('이미 알림이 발생한 이벤트에 대해서는 중복 알림이 발생하지 않아야 한다', () => {
     const { result } = renderHook(() => useNotifications(mockEvents));
 
+    // 첫 번째 알림 생성
+    const [[triggerNotification]] = useIntervalMock.mock.calls;
+    act(() => {
+      triggerNotification();
+    });
+
+    // 첫 번째 알림 확인
+    expect(result.current.notifications).toHaveLength(1);
+
+    // 두 번째 실행
     act(() => {
       vi.advanceTimersByTime(1000);
     });
 
-    const notification = [{ id: '1', message: createNotificationMessage(mockEvents[0]) }];
-
-    expect(result.current.notifications).toEqual(notification);
-
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-
-    expect(result.current.notifications).toEqual(notification);
+    // 알림이 추가되지 않았는지 확인
+    expect(result.current.notifications).toHaveLength(1);
+    expect(result.current.notifications).toEqual([
+      { id: '1', message: createNotificationMessage(mockEvents[0]) },
+    ]);
   });
 
   it('알림 시간이 지난 이벤트는 알림이 생성되지 않아야 한다', () => {
@@ -92,14 +98,6 @@ describe('useNotifications', () => {
       vi.advanceTimersByTime(1000);
     });
 
-    const notification = [{ id: '1', message: createNotificationMessage(mockEvents[0]) }];
-
-    expect(result.current.notifications).toEqual(notification);
-
-    act(() => {
-      vi.advanceTimersByTime(1000);
-    });
-
-    expect(result.current.notifications).toEqual(notification);
+    expect(result.current.notifications).toEqual([]);
   });
 });

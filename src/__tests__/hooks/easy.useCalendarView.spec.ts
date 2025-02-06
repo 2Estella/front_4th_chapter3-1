@@ -1,32 +1,34 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useCalendarView } from '../../hooks/useCalendarView';
 import { assertDate } from '../utils';
+
+import { useCalendarView } from '@/hooks/useCalendarView';
 
 /**
  * useCalendarView 훅의 기본 동작을 테스트하는 테스트 케이스
  */
 describe('useCalendarView', () => {
   beforeEach(() => {
-    // 모든 테스트에서 2024년 10월 1일로 날짜 고정
-    vi.useFakeTimers();
     vi.setSystemTime(new Date('2024-10-01'));
   });
 
   describe('초기 상태', () => {
     it('view는 "month"이어야 한다', () => {
       const { result } = renderHook(() => useCalendarView());
+
       expect(result.current.view).toBe('month');
     });
 
     it('currentDate는 오늘 날짜인 "2024-10-01"이어야 한다', () => {
       const { result } = renderHook(() => useCalendarView());
+
       assertDate(result.current.currentDate, new Date('2024-10-01'));
     });
 
     it('holidays는 10월 휴일인 개천절, 한글날이 지정되어 있어야 한다', () => {
       const { result } = renderHook(() => useCalendarView());
+
       expect(result.current.holidays).toEqual({
         '2024-10-03': '개천절',
         '2024-10-09': '한글날',
