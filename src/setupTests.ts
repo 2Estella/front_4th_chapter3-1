@@ -8,7 +8,9 @@ export const server = setupServer(...handlers);
 
 // 테스트 환경 설정
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: 'error' });
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2024-10-01T09:30'));
+  server.listen();
 });
 
 // 각 테스트 케이스 시작 전 assertion 확인
@@ -24,6 +26,7 @@ afterEach(() => {
 
 // 모든 테스트 종료 후 서버 종료
 afterAll(() => {
+  vi.useRealTimers();
   vi.resetAllMocks();
   server.close();
 });
