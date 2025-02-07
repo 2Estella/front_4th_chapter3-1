@@ -38,9 +38,8 @@ describe('일정 관리 앱', () => {
     resetMockHandlers();
     vi.setSystemTime(new Date('2024-10-15'));
 
-    user = userEvent.setup();
-
     renderApp();
+    user = userEvent.setup();
   });
 
   afterEach(() => {
@@ -96,7 +95,6 @@ describe('일정 관리 앱', () => {
       const editButton = await screen.findByLabelText('Edit event');
       await user.click(editButton);
 
-      await user.clear(screen.getByLabelText('제목'));
       await user.type(screen.getByLabelText('제목'), '수정된 회의');
 
       await user.click(screen.getByTestId('event-submit-button'));
